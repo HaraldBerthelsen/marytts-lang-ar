@@ -155,12 +155,13 @@ public class JPhonemiser extends marytts.modules.JPhonemiser {
 	HashMap<String, String> unambiguousConsonantMap = new HashMap<String, String>();
 	unambiguousConsonantMap.put("b","b");
 	unambiguousConsonantMap.put("t","t");
-	unambiguousConsonantMap.put("v","v"); //check
+	unambiguousConsonantMap.put("v","^"); 
 	unambiguousConsonantMap.put("j","j");
 	unambiguousConsonantMap.put("H","H");
 	unambiguousConsonantMap.put("x","x");
 	unambiguousConsonantMap.put("d","d");
-	unambiguousConsonantMap.put("*","*"); //check
+	unambiguousConsonantMap.put("*","*"); //check is * or 2 used in buckwalter
+	unambiguousConsonantMap.put("2","*");
 	unambiguousConsonantMap.put("r","r");
 	unambiguousConsonantMap.put("z","z");
 	unambiguousConsonantMap.put("s","s");
