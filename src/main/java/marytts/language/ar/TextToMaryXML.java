@@ -53,7 +53,7 @@ public class TextToMaryXML extends marytts.modules.InternalModule {
     private boolean splitIntoParagraphs;
 
     public TextToMaryXML() {
-	super("TextToMaryXML", MaryDataType.TEXT, MaryDataType.RAWMARYXML, null);
+	super("TextToMaryXML", MaryDataType.TEXT, MaryDataType.RAWMARYXML, new Locale("ar"));
 	splitIntoParagraphs = MaryProperties.getBoolean("texttomaryxml.splitintoparagraphs");
     }
 
