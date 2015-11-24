@@ -160,7 +160,7 @@ public class JPhonemiser extends marytts.modules.JPhonemiser {
 	unambiguousConsonantMap.put("H","H");
 	unambiguousConsonantMap.put("x","x");
 	unambiguousConsonantMap.put("d","d");
-	unambiguousConsonantMap.put("*","*"); //check is * or 2 used in buckwalter
+	unambiguousConsonantMap.put("*","*"); //check is * or 2 used in "my" buckwalter
 	unambiguousConsonantMap.put("2","*");
 	unambiguousConsonantMap.put("r","r");
 	unambiguousConsonantMap.put("z","z");
@@ -170,7 +170,7 @@ public class JPhonemiser extends marytts.modules.JPhonemiser {
 	unambiguousConsonantMap.put("D","D");
 	unambiguousConsonantMap.put("T","T");
 	unambiguousConsonantMap.put("Z","Z");
-	unambiguousConsonantMap.put("E","<");
+	unambiguousConsonantMap.put("E","E");
 
 	unambiguousConsonantMap.put("g","g");
 	unambiguousConsonantMap.put("f","f");
