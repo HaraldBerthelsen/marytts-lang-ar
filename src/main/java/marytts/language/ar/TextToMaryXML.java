@@ -183,11 +183,16 @@ public class TextToMaryXML extends marytts.modules.InternalModule {
 
     private static boolean isDiacritic(char c) {
 	final String diacritics = "\u0652\u064e\u064f\u0650\u064b\u064c\u064d\u0651";
-	return diacritics.indexOf(c) >= 0;
+	int firstDiacriticIndex = diacritics.indexOf(c);
+	if (firstDiacriticIndex >= 0) {
+	    System.out.println("Found diacritic "+c+" at index "+firstDiacriticIndex);
+	    return true;
+	}
+	return false;
     }
 
 
-    private static String vocaliseText(String text) throws Exception {
+    private static String vocaliseTextOLD(String text) throws Exception {
 
 	String url = "http://localhost:8080/ajaxGet?action=TashkeelText&text=";
 	url+=URLEncoder.encode(text);
@@ -202,6 +207,38 @@ public class TextToMaryXML extends marytts.modules.InternalModule {
 	return vocalised;
 
     }
+
+    private static String vocaliseText(String text) throws Exception {
+
+	String url = "http://localhost:8080/vocalise?text=";
+	url+=URLEncoder.encode(text, "UTF-8");
+	System.out.println("Vocalise url: "+url);
+
+	InputStream is = new URL(url).openStream();
+
+	//JsonReader rdr = Json.createReader(is);
+	//JsonObject obj = rdr.readObject();
+	//String vocalised = obj.getString("result");
+
+        BufferedReader in = new BufferedReader(new InputStreamReader(is));
+
+        StringBuilder response = new StringBuilder();
+        String inputLine;
+
+        while ((inputLine = in.readLine()) != null) 
+            response.append(inputLine);
+
+        in.close();
+
+        String vocalised = response.toString();
+	
+	System.out.println("Vocalised text: "+vocalised);
+	
+	return vocalised;
+
+    }
+
+
 
     private static String arabicToBuckwalter(String text) {
 	String ar = "";
