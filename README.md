@@ -3,10 +3,9 @@
 This is very much work in progress.
 It sort of works for me - but there are plenty of errors and problems.
 
-Test version is (sometimes - and apparently works in chrome only) up on http://demo.morf.se/marytts
+Test version is (sometimes - and apparently works in chrome only) up on http://morf.se:59125
 
-For vocalisation the Mishkal software needs to be running in the background. Clone it from here https://github.com/linuxscout/mishkal.git, and run mishkal-webserver.py. 
-NOTE - the current version 2015-11-24 of mishkal doesn't seem to work at all, the code is being restructured. I have a version from a week ago or so that works, and I'm sure it will work again soon. 
+For vocalisation another server needs to be running in the background. Clone it from here https://github.com/HaraldBerthelsen/arabic_vocaliser.git, and run "nohup python vocalise.py server &" 
 
 Clone and compile marytts (mvn package).
 
@@ -25,4 +24,4 @@ Fix problems with phonetiser rules. Some rules are clearly wrong - test examples
 
 Include java code from https://github.com/bluemix/NumberToArabicWords.git for number conversion.
 
-Use (or develop) a java vocalizer to avoid dependency on the mishkal server.
+Convert vocaliser from python to java - or at least speed it up and fix problems.
