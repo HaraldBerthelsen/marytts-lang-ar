@@ -13,6 +13,9 @@ import marytts.modules.InternalModule;
 import marytts.util.dom.MaryDomUtils;
 import marytts.util.dom.NameNodeFilter;
 
+import java.io.*;
+import java.net.*;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.traversal.DocumentTraversal;
@@ -28,27 +31,107 @@ import com.ibm.icu.text.RuleBasedNumberFormat;
  */
 public class Preprocess extends InternalModule {
 
-	private RuleBasedNumberFormat rbnf;
-	protected final String cardinalRule;
+    private RuleBasedNumberFormat rbnf;
+    protected final String cardinalRule;
     //protected final String ordinalRule;
 
-	public Preprocess() {
-	    super("Preprocess", MaryDataType.TOKENS, MaryDataType.WORDS, new Locale("sv"));
-	    this.rbnf = new RuleBasedNumberFormat(new ULocale("ar"), RuleBasedNumberFormat.SPELLOUT);
-		this.cardinalRule = "%spellout-numbering";
-		//NO ORDINALS IN ARABIC?? this.ordinalRule = getOrdinalRuleName(rbnf);
-	}
+    public Preprocess() {
+	super("Preprocess", MaryDataType.TOKENS, MaryDataType.WORDS, new Locale("ar"));
+	this.rbnf = new RuleBasedNumberFormat(new ULocale("ar"), RuleBasedNumberFormat.SPELLOUT);
+	this.cardinalRule = "%spellout-numbering";
+	//this.ordinalRule = getOrdinalRuleName(rbnf);
+    }
 
 	public MaryData process(MaryData d) throws Exception {
 		Document doc = d.getDocument();
 		logger.info("preprocess 'ar': calling checkForNumbers");
 		checkForNumbers(doc);
+		vocaliseDoc(doc);
 		MaryData result = new MaryData(getOutputType(), d.getLocale());
 		result.setDocument(doc);
 		return result;
 	}
 
-	protected void checkForNumbers(Document doc) {
+    protected void vocaliseDoc(Document doc) throws Exception {
+	TreeWalker tw = ((DocumentTraversal) doc).createTreeWalker(doc, NodeFilter.SHOW_ELEMENT,
+								   new NameNodeFilter(MaryXML.TOKEN), false);
+	Element t = null;
+        StringBuilder origText = new StringBuilder();
+	//String origText = "";
+	while ((t = (Element) tw.nextNode()) != null) {
+	    //if (MaryDomUtils.hasAncestor(t, MaryXML.SAYAS) || t.hasAttribute("ph") || t.hasAttribute("sounds_like")) {
+		// ignore token
+	    //continue;
+	    //}
+	    //First attempt: vocalising each token on its own
+	    //Next: vocalise sentence by sentence
+	    origText.append(" " + MaryDomUtils.tokenText(t));
+	    //MaryDomUtils.setTokenText(t, arabicToBuckwalter(vocaliseText(origText)));
+	}
+	String vocText = arabicToBuckwalter(vocaliseText(origText.toString()));
+	String[] vocTextList = vocText.split(" ");
+
+	TreeWalker tw2 = ((DocumentTraversal) doc).createTreeWalker(doc, NodeFilter.SHOW_ELEMENT,
+								   new NameNodeFilter(MaryXML.TOKEN), false);
+	Element t2 = null;
+	int i = 0;
+	//HERE not right if there's a number! mtu_unit
+	while ((t2 = (Element) tw2.nextNode()) != null) {
+	    MaryDomUtils.setTokenText(t2, vocTextList[i]);
+	    i++;
+	}
+    }
+
+    private static String vocaliseText(String text) throws Exception {
+
+	String url = "http://localhost:8080/vocalise?text=";
+	url+=URLEncoder.encode(text, "UTF-8");
+	System.out.println("Vocalise url: "+url);
+
+	InputStream is = new URL(url).openStream();
+
+        BufferedReader in = new BufferedReader(new InputStreamReader(is));
+
+        StringBuilder response = new StringBuilder();
+        String inputLine;
+
+        while ((inputLine = in.readLine()) != null) 
+            response.append(inputLine);
+
+        in.close();
+
+        String vocalised = response.toString();
+	
+	System.out.println("Vocalised text: "+vocalised);
+	
+	return vocalised;
+
+    }
+
+    private static String arabicToBuckwalter(String text) {
+	String ar = "";
+	for (char ch: text.toCharArray()) {
+	    ar += arabicToBuckwalter(ch);
+	}
+	return ar;
+    }
+
+
+    private static char arabicToBuckwalter(char c) {
+	final String arabic = "ابتثجحخدذرزسشصضطظعغفقكلمنهويءإأؤئآٱٰىًٌٍَُِّْةـ";
+	//final String buckwalter = "AbtvjHxd*rzs$SDTZEgfqklmnhwy'IOW}|{`YauiFNK_op_";
+	//' -> 1 WRONG it's lone hamza TODO replace with something else in corpus (or is it ok to keep '?)
+	//| -> 1
+	//` -> 2
+	final String buckwalter = "AbtvjHxd*rzs$SDTZEgfqklmnhwy1IOW}1{2YauiFNK_op_";
+	int index = arabic.indexOf(c);
+	if (index >= 0)
+	    return buckwalter.charAt(index);
+	return c; //what is the right thing to do ?? maybe check for space, punctuation, etc?
+    }
+
+    
+    protected void checkForNumbers(Document doc) {
 		TreeWalker tw = ((DocumentTraversal) doc).createTreeWalker(doc, NodeFilter.SHOW_ELEMENT,
 				new NameNodeFilter(MaryXML.TOKEN), false);
 		Element t = null;
@@ -102,7 +185,8 @@ public class Preprocess extends InternalModule {
 	 */
 	protected String getOrdinalRuleName(final RuleBasedNumberFormat rbnf) {
 		List<String> l = Arrays.asList(rbnf.getRuleSetNames());
-		logger.debug("RNBF list for 'ar':"+l);
+		System.err.println("RNBF list for 'ar':"+l);
+		//[%spellout-cardinal-masculine, %spellout-cardinal-feminine, %spellout-numbering, %spellout-numbering-year]
 		if (l.contains("%spellout-ordinal")) {
 			return "%spellout-ordinal";
 		} else {
