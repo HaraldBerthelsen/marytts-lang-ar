@@ -4,6 +4,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+
 import com.ibm.icu.util.ULocale;
 
 import marytts.datatypes.MaryData;
@@ -42,15 +49,15 @@ public class Preprocess extends InternalModule {
 	//this.ordinalRule = getOrdinalRuleName(rbnf);
     }
 
-	public MaryData process(MaryData d) throws Exception {
-		Document doc = d.getDocument();
-		logger.info("preprocess 'ar': calling checkForNumbers");
-		checkForNumbers(doc);
-		vocaliseDoc(doc);
-		MaryData result = new MaryData(getOutputType(), d.getLocale());
-		result.setDocument(doc);
-		return result;
-	}
+    public MaryData process(MaryData d) throws Exception {
+	Document doc = d.getDocument();
+	logger.info("preprocess 'ar': calling checkForNumbers");
+	checkForNumbers(doc);
+	vocaliseDoc(doc);
+	MaryData result = new MaryData(getOutputType(), d.getLocale());
+	result.setDocument(doc);
+	return result;
+    }
 
     protected void vocaliseDoc(Document doc) throws Exception {
 	TreeWalker tw = ((DocumentTraversal) doc).createTreeWalker(doc, NodeFilter.SHOW_ELEMENT,
@@ -68,21 +75,22 @@ public class Preprocess extends InternalModule {
 	    origText.append(" " + MaryDomUtils.tokenText(t));
 	    //MaryDomUtils.setTokenText(t, arabicToBuckwalter(vocaliseText(origText)));
 	}
-	String vocText = arabicToBuckwalter(vocaliseText(origText.toString()));
+	//String vocText = arabicToBuckwalter(vocaliseText(origText.toString()));
+	String vocText = vocaliseText(origText.toString());
 	String[] vocTextList = vocText.split(" ");
 
 	TreeWalker tw2 = ((DocumentTraversal) doc).createTreeWalker(doc, NodeFilter.SHOW_ELEMENT,
 								   new NameNodeFilter(MaryXML.TOKEN), false);
 	Element t2 = null;
 	int i = 0;
-	//HERE not right if there's a number! mtu_unit
+	//HERE not right if there's a number! mtu
 	while ((t2 = (Element) tw2.nextNode()) != null) {
 	    MaryDomUtils.setTokenText(t2, vocTextList[i]);
 	    i++;
 	}
     }
 
-    private static String vocaliseText(String text) throws Exception {
+    protected static String vocaliseText(String text) throws Exception {
 
 	String url = "http://localhost:8080/vocalise?text=";
 	url+=URLEncoder.encode(text, "UTF-8");
@@ -132,29 +140,49 @@ public class Preprocess extends InternalModule {
 
     
     protected void checkForNumbers(Document doc) {
-		TreeWalker tw = ((DocumentTraversal) doc).createTreeWalker(doc, NodeFilter.SHOW_ELEMENT,
-				new NameNodeFilter(MaryXML.TOKEN), false);
-		Element t = null;
-		while ((t = (Element) tw.nextNode()) != null) {
-			if (MaryDomUtils.hasAncestor(t, MaryXML.SAYAS) || t.hasAttribute("ph") || t.hasAttribute("sounds_like")) {
-				// ignore token
-				continue;
-			}
-			String origText = MaryDomUtils.tokenText(t);
-			if (MaryDomUtils.tokenText(t).matches("\\d+")) {
-			    MaryDomUtils.setTokenText(t, expandNumber(Double.parseDouble(MaryDomUtils.tokenText(t))));
-			}
-			// if token isn't ignored but there is no handling rule don't add MTU
-			if (!origText.equals(MaryDomUtils.tokenText(t))) {
-				MaryDomUtils.encloseWithMTU(t, origText, null);
-			}
-		}
-	}
+	TreeWalker tw = ((DocumentTraversal) doc).createTreeWalker(doc, NodeFilter.SHOW_ELEMENT, new NameNodeFilter(MaryXML.TOKEN), false);
+	Element t = null;
+	while ((t = (Element) tw.nextNode()) != null) {
+	    if (MaryDomUtils.hasAncestor(t, MaryXML.SAYAS) || t.hasAttribute("ph") || t.hasAttribute("sounds_like")) {
+		// ignore token
+		continue;
+	    }
+	    String origText = MaryDomUtils.tokenText(t);
+	    System.err.println("Looking for number: "+origText);
 
-	protected String expandNumber(double number) {
+	    if (origText.matches("\\d+")) {
+		System.err.println("FOUND NUMBER: "+origText);
+
+		String expanded = expandNumber(Double.parseDouble(origText));
+		//System.err.println("Setting token text to "+expanded);
+		//MaryDomUtils.setTokenText(t, expanded);
+		List mtu = makeNewTokens(doc, expanded, true, origText, false);
+		System.err.println("MTU: "+mtu);
+		ArrayList<Element> oldtokens = new ArrayList<Element>();
+		oldtokens.add(t);
+		replaceTokens(oldtokens, mtu);
+
+		//tw is now in the wrong place, need to correct
+		Element lastToken = getLastToken(mtu);
+		assert lastToken != null;
+		tw.setCurrentNode(lastToken);
+		System.err.println("set treewalker position:" + MaryDomUtils.getPlainTextBelow((Element) tw.getCurrentNode()));
+
+
+		
+	    }
+	    // if token isn't ignored but there is no handling rule don't add MTU
+	    //if (!origText.equals(MaryDomUtils.tokenText(t))) {
+	    //	MaryDomUtils.encloseWithMTU(t, origText, null);
+	    //}
+	}
+    }
+
+    protected String expandNumber(double number) {
 	    this.rbnf.setDefaultRuleSet(cardinalRule);
 	    String expanded = this.rbnf.format(number); 
 	    logger.debug("Expanding cardinal "+number+" using rule "+cardinalRule+" -> "+expanded);
+	    System.err.println("Expanding cardinal "+number+" using rule "+cardinalRule+" -> "+expanded);
 	    return expanded;
 	}
 
@@ -199,4 +227,125 @@ public class Preprocess extends InternalModule {
 		throw new UnsupportedOperationException("The locale " + rbnf.getLocale(ULocale.ACTUAL_LOCALE)
 				+ " doesn't supports ordinal spelling.");
 	}
+
+
+
+    /*
+      makeNewTokens and replaceTokens from marytts-lang-de ExpansionPattern
+      getLastToken from marytts-lang-de Preprocess
+     */
+
+    protected List<Element> makeNewTokens(Document doc, String newText, boolean createMtu, String origText, boolean forceAccents) {
+		if (newText == null || newText.length() == 0) {
+			// unusable input
+			return null; // failure
+		}
+		Pattern rePron = Pattern.compile("\\[(.*)\\]"); // pronunciation in square brackets
+		StringTokenizer st = new StringTokenizer(newText);
+		ArrayList<Element> newTokens = new ArrayList<Element>();
+		while (st.hasMoreTokens()) {
+			// Create new token element:
+			String text = st.nextToken();
+			Element newT = MaryXML.createElement(doc, MaryXML.TOKEN);
+			Matcher remPron = rePron.matcher(text);
+			if (remPron.find()) {
+				String pron = remPron.group(1); // would be $1 in perl
+				text = rePron.matcher(text).replaceFirst(""); // delete pronunciation from word
+				newT.setAttribute("ph", pron);
+			}
+			MaryDomUtils.setTokenText(newT, text);
+			System.err.println("makeNewTokens creating token "+text);
+			if (forceAccents)
+				newT.setAttribute("accent", "unknown");
+			newTokens.add(newT);
+		}
+		if (createMtu) {
+			// create mtu element enclosing the expanded tokens:
+			Element mtu = MaryXML.createElement(doc, MaryXML.MTU);
+			mtu.setAttribute("orig", origText);
+			mtu.setAttribute("accent", "last");
+			for (Iterator<Element> it = newTokens.iterator(); it.hasNext();) {
+			    Element e = it.next();
+			    System.err.println("makeNewTokens adding token to mtu: "+MaryDomUtils.tokenText(e));
+			    mtu.appendChild((Element) e);
+			}
+			List<Element> result = new ArrayList<Element>();
+			result.add(mtu);
+			System.err.println("makeNewTokens returning mtu: "+mtu);
+			return result;
+		} else {
+			return newTokens;
+		}
+	}
+
+	protected void replaceTokens(List<Element> oldTokens, List<Element> newTokens) {
+		if (oldTokens == null || oldTokens.isEmpty() || newTokens == null || newTokens.isEmpty()) {
+			// unusable input
+			throw new NullPointerException("Have received null or empty argument.");
+		}
+		Element oldT = null;
+		Iterator<Element> itOld = oldTokens.iterator();
+		Iterator<Element> itNew = newTokens.iterator();
+		while (itNew.hasNext()) {
+			Element newT = (Element) itNew.next();
+			// Retrieve old token element:
+			if (itOld.hasNext()) // this is true at least once
+				oldT = (Element) itOld.next();
+			oldT.getParentNode().insertBefore(newT, oldT);
+			if (itOld.hasNext()) // only remove this old t if there is another one
+				oldT.getParentNode().removeChild(oldT);
+		}
+		if (!itOld.hasNext()) { // only need to remove oldT
+			oldT.getParentNode().removeChild(oldT);
+		} else {
+			// there were more old than new tokens
+			while (itOld.hasNext()) {
+				oldT = (Element) itOld.next();
+				oldT.getParentNode().removeChild(oldT);
+			}
+		}
+		// Now go through the new tokens again and see if there are any
+		// useless mtu combinations. If so, the "inner" one wins.
+		itNew = newTokens.iterator();
+		while (itNew.hasNext()) {
+			Element mtu = (Element) itNew.next();
+			if (!mtu.getTagName().equals(MaryXML.MTU))
+				continue;
+			Element parent = (Element) mtu.getParentNode();
+			if (!parent.getTagName().equals(MaryXML.MTU))
+				continue;
+			// OK, got an mtu inside an mtu
+			if (MaryDomUtils.getPreviousSiblingElement(mtu) != null || MaryDomUtils.getNextSiblingElement(mtu) != null)
+				continue;
+			if (!parent.getAttribute("orig").equals(mtu.getAttribute("orig")))
+				continue;
+			// OK, mtu and parent are mtu tags, there is no other element in parent
+			// than mtu, and both have the same orig value
+			// => delete parent
+			Element grandParent = (Element) parent.getParentNode();
+			grandParent.insertBefore(mtu, parent);
+			grandParent.removeChild(parent);
+		}
+	}
+
+
+	private Element getLastToken(List<Element> l) {
+		if (l == null)
+			throw new NullPointerException("Received null argument");
+		if (l.isEmpty())
+			throw new IllegalArgumentException("Received empty list");
+		for (int i = l.size() - 1; i >= 0; i--) {
+			Element e = (Element) l.get(i);
+			Element t = null;
+			if (e.getTagName().equals(MaryXML.TOKEN)) {
+				t = e;
+			} else {
+				t = MaryDomUtils.getLastElementByTagName(e, MaryXML.TOKEN);
+			}
+			if (t != null)
+				return t;
+		}
+		return null;
+	}
+
 }

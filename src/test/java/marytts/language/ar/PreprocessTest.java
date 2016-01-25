@@ -54,30 +54,38 @@ public class PreprocessTest {
 	// 	// @formatter:on
 	// }
 
-	// @Test(dataProvider = "DocData")
-	// public void testSpellout(String tokenised, String expected) throws Exception, ParserConfigurationException, SAXException,
-	// 		IOException {
-	// 	Document tokenisedDoc;
-	// 	Document expectedDoc;
-	// 	String tokens = "<maryxml xmlns=\"http://mary.dfki.de/2002/MaryXML\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" version=\"0.5\" xml:lang=\"ar\"><p><s><t>"
-	// 			+ tokenised + "</t></s></p></maryxml>";
-	// 	tokenisedDoc = DomUtils.parseDocument(tokens);
-	// 	String words = "<maryxml xmlns=\"http://mary.dfki.de/2002/MaryXML\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" version=\"0.5\" xml:lang=\"sv\"><p><s><mtu orig=\""
-	// 			+ tokenised + "\"><t>" + expected + "</t></mtu></s></p></maryxml>";
-	// 	expectedDoc = DomUtils.parseDocument(words);
-	// 	module.checkForNumbers(tokenisedDoc);
-	// 	Diff diff = XMLUnit.compareXML(expectedDoc, tokenisedDoc);
+	@DataProvider(name = "FullDocTestData")
+	private Object[][] numberExpansionFullDocTestData() {
+		// @formatter:off
+		return new Object[][] { { "1", "واحد" }, 
+					{ "2", "إثنان" } };
+		// @formatter:on
+	}
 
-	// 	//HB
-	// 	if (diff.identical() == false) {
-	// 	    System.err.println("tokenised: "+tokenised+", expected: "+expected);
-	// 	    System.err.println("tokenisedDoc: "+DomUtils.document2String(tokenisedDoc));
-	// 	    System.err.println("expectedDoc: "+DomUtils.document2String(expectedDoc));
-	// 	    System.err.println("diff.identical(): "+diff.identical());
-	// 	}
+	@Test(dataProvider = "FullDocTestData")
+	public void testSpellout(String tokenised, String expected) throws Exception, ParserConfigurationException, SAXException,
+			IOException {
+		Document tokenisedDoc;
+		Document expectedDoc;
+		String tokens = "<maryxml xmlns=\"http://mary.dfki.de/2002/MaryXML\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" version=\"0.5\" xml:lang=\"ar\"><p><s><t>"
+				+ tokenised + "</t></s></p></maryxml>";
+		tokenisedDoc = DomUtils.parseDocument(tokens);
+		String words = "<maryxml xmlns=\"http://mary.dfki.de/2002/MaryXML\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" version=\"0.5\" xml:lang=\"ar\"><p><s><mtu accent=\"last\" orig=\""
+				+ tokenised + "\"><t>" + expected + "</t></mtu></s></p></maryxml>";
+		expectedDoc = DomUtils.parseDocument(words);
+		module.checkForNumbers(tokenisedDoc);
+		Diff diff = XMLUnit.compareXML(expectedDoc, tokenisedDoc);
 
-	// 	Assert.assertTrue(diff.identical());
-	// }
+		//HB
+		if (diff.identical() == false) {
+		    System.err.println("tokenised: "+tokenised+", expected: "+expected);
+		    System.err.println("tokenisedDoc: "+DomUtils.document2String(tokenisedDoc));
+		    System.err.println("expectedDoc: "+DomUtils.document2String(expectedDoc));
+		    System.err.println("diff.identical(): "+diff.identical());
+		}
+
+		Assert.assertTrue(diff.identical());
+	}
 
 	@Test(dataProvider = "NumExpandData")
 	public void testExpandNum(String token, String word) {
@@ -92,4 +100,22 @@ public class PreprocessTest {
 	// 	String actual = module.expandOrdinal(x);
 	// 	Assert.assertEquals(actual, word);
 	// }
+
+
+	@DataProvider(name = "VocaliseData")
+	private Object[][] vocalisationData() {
+		// @formatter:off
+	    return new Object[][] { 
+		{ "المملكة", "الْمَمْلَكَة" }
+		//, { "المغربية", "الْمَغْرِبِيَّة"}
+	    };
+		// @formatter:on
+	}
+	@Test(dataProvider = "VocaliseData")
+	public void testVocalise(String token, String word) throws Exception {
+	    String actual = module.vocaliseText(token).trim();
+	    Assert.assertEquals(actual, word);
+	}
+
+
 }
