@@ -20,4 +20,6 @@ Allow partially diacritised text.
 
 Fix problems with phonetiser rules. Some rules are clearly wrong - test examples (or a native speaker!) needed to sort them out.
 
+Cleanup - the code is now very messy :-(
+
 Convert vocaliser from python to java - or at least speed it up and fix problems.
