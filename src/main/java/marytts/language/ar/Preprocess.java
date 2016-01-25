@@ -150,10 +150,13 @@ public class Preprocess extends InternalModule {
 	    String origText = MaryDomUtils.tokenText(t);
 	    System.err.println("Looking for number: "+origText);
 
-	    if (origText.matches("\\d+")) {
+	    if (origText.matches("[0-9]+([,.][0-9]+)*")) {
 		System.err.println("FOUND NUMBER: "+origText);
 
-		String expanded = expandNumber(Double.parseDouble(origText));
+		//Decimal point is ok, but comma is not (1,000,000 -> 1000000)
+		String cleanedText = origText.replace(",", ""); 
+
+		String expanded = expandNumber(Double.parseDouble(cleanedText));
 		//System.err.println("Setting token text to "+expanded);
 		//MaryDomUtils.setTokenText(t, expanded);
 		List mtu = makeNewTokens(doc, expanded, true, origText, false);
