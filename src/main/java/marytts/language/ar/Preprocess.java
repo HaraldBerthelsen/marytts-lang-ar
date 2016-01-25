@@ -64,18 +64,12 @@ public class Preprocess extends InternalModule {
 								   new NameNodeFilter(MaryXML.TOKEN), false);
 	Element t = null;
         StringBuilder origText = new StringBuilder();
-	//String origText = "";
 	while ((t = (Element) tw.nextNode()) != null) {
 	    //if (MaryDomUtils.hasAncestor(t, MaryXML.SAYAS) || t.hasAttribute("ph") || t.hasAttribute("sounds_like")) {
 		// ignore token
 	    //continue;
-	    //}
-	    //First attempt: vocalising each token on its own
-	    //Next: vocalise sentence by sentence
 	    origText.append(" " + MaryDomUtils.tokenText(t));
-	    //MaryDomUtils.setTokenText(t, arabicToBuckwalter(vocaliseText(origText)));
 	}
-	//String vocText = arabicToBuckwalter(vocaliseText(origText.toString()));
 	String vocText = vocaliseText(origText.toString());
 	String[] vocTextList = vocText.split(" ");
 
@@ -83,7 +77,7 @@ public class Preprocess extends InternalModule {
 								   new NameNodeFilter(MaryXML.TOKEN), false);
 	Element t2 = null;
 	int i = 0;
-	//HERE not right if there's a number! mtu
+
 	while ((t2 = (Element) tw2.nextNode()) != null) {
 	    MaryDomUtils.setTokenText(t2, vocTextList[i]);
 	    i++;
@@ -116,27 +110,6 @@ public class Preprocess extends InternalModule {
 
     }
 
-    private static String arabicToBuckwalter(String text) {
-	String ar = "";
-	for (char ch: text.toCharArray()) {
-	    ar += arabicToBuckwalter(ch);
-	}
-	return ar;
-    }
-
-
-    private static char arabicToBuckwalter(char c) {
-	final String arabic = "ابتثجحخدذرزسشصضطظعغفقكلمنهويءإأؤئآٱٰىًٌٍَُِّْةـ";
-	//final String buckwalter = "AbtvjHxd*rzs$SDTZEgfqklmnhwy'IOW}|{`YauiFNK_op_";
-	//' -> 1 WRONG it's lone hamza TODO replace with something else in corpus (or is it ok to keep '?)
-	//| -> 1
-	//` -> 2
-	final String buckwalter = "AbtvjHxd*rzs$SDTZEgfqklmnhwy1IOW}1{2YauiFNK_op_";
-	int index = arabic.indexOf(c);
-	if (index >= 0)
-	    return buckwalter.charAt(index);
-	return c; //what is the right thing to do ?? maybe check for space, punctuation, etc?
-    }
 
     
     protected void checkForNumbers(Document doc) {
@@ -218,6 +191,7 @@ public class Preprocess extends InternalModule {
 		List<String> l = Arrays.asList(rbnf.getRuleSetNames());
 		System.err.println("RNBF list for 'ar':"+l);
 		//[%spellout-cardinal-masculine, %spellout-cardinal-feminine, %spellout-numbering, %spellout-numbering-year]
+		//But http://unicode.org/repos/cldr/trunk/common/rbnf/ar.xml has spellout-ordinal-masculine and spellout-ordinal-feminine
 		if (l.contains("%spellout-ordinal")) {
 			return "%spellout-ordinal";
 		} else {
@@ -228,7 +202,7 @@ public class Preprocess extends InternalModule {
 			}
 		}
 		throw new UnsupportedOperationException("The locale " + rbnf.getLocale(ULocale.ACTUAL_LOCALE)
-				+ " doesn't supports ordinal spelling.");
+				+ " doesn't support ordinal spelling.");
 	}
 
 

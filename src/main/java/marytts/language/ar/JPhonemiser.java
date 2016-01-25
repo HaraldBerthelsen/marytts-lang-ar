@@ -37,6 +37,12 @@ public class JPhonemiser extends marytts.modules.JPhonemiser {
         super("ar.");
     }
     
+    public String phonemise(String text) {
+	String pos = "NONE";
+	StringBuilder g2pMethod = new StringBuilder();
+	return phonemise(text, pos, g2pMethod);
+    }
+
     @Override
     public String phonemise(String text, String pos, StringBuilder g2pMethod)
     {
@@ -44,7 +50,7 @@ public class JPhonemiser extends marytts.modules.JPhonemiser {
 	//Arabic question:
 	//Where to remove initial A if previous word ends with vowel?
 	//Here only one word at a time..
-
+	//It is now done in Postlex.java
 
 	text = arabicToBuckwalter(text);
 
@@ -83,15 +89,27 @@ public class JPhonemiser extends marytts.modules.JPhonemiser {
                 return result;
             }
         }
+
+
            
         // Cannot find it in the lexicon -- apply letter-to-sound rules
         // to the normalised form
         
 
-	//HB It would probably be better to not use lts rules, but a simpler conversion of buckwalter to phonetics.
+	//HB It is probably better to not use lts rules, but a simpler conversion of buckwalter to phonetics.
         //String phones = lts.predictPronunciation(text);
 
-	//Trying instead a very simple buckwalter to phonetic mapping (should be the same as in Arabic-Phonetiser)
+	//Trying instead a simple buckwalter to phonetic mapping (should be the same as in Arabic-Phonetiser)
+
+	/*
+	  //This check should be done before vocalisation - when the word appears here it's been vocalised and doesn't match the fixed words (ex lndn appears as lanodan)
+	result = isFixedWord(text);
+	if (result != null) {
+	    g2pMethod.append("lexicon");
+	    return result;
+	}
+	*/
+
 	String phones = buckwalterToPhonetic(text);
 	System.out.println("Text: "+text+", phones: "+phones);
 
@@ -133,10 +151,6 @@ public class JPhonemiser extends marytts.modules.JPhonemiser {
 	fixedWords.put("nt", new String[] { "n i1 t" } );
 	fixedWords.put("fydyw", new String[] { "v i0 d y uu1" } );
 	fixedWords.put("lndn", new String[] { "l A n d u1 n" } );
-
-
-	//Remove diacritics
-	//Select pronunciation (how?)
 
 	String result;
 	if ( fixedWords.containsKey(word) ) {

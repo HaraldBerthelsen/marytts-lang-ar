@@ -1,6 +1,3 @@
-/**
- *Copyright (C) 2003 DFKI GmbH. All rights reserved.
- */
 package marytts.language.ar;
 
 import marytts.language.ar.Preprocess;
@@ -16,7 +13,7 @@ import java.io.IOException;
 import javax.xml.parsers.ParserConfigurationException;
 
 /**
- * @author Tristan Hamilton + HB
+ * @author HB
  *
  *
  */
