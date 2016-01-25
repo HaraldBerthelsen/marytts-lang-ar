@@ -93,10 +93,10 @@ public class JPhonemiser extends marytts.modules.JPhonemiser {
 
 	//Trying instead a very simple buckwalter to phonetic mapping (should be the same as in Arabic-Phonetiser)
 	String phones = buckwalterToPhonetic(text);
-	//System.out.println("Text: "+text+", phones: "+phones);
+	System.out.println("Text: "+text+", phones: "+phones);
 
         result = lts.syllabify(phones);
-	//System.out.println("Syllabified: "+result);
+	System.out.println("Syllabified: "+result);
 
 
         if (result != null) {
@@ -165,8 +165,11 @@ public class JPhonemiser extends marytts.modules.JPhonemiser {
 	//` -> 2
 	final String buckwalter = "AbtvjHxd*rzs$SDTZEgfqklmnhwy1IOW}1{2YauiFNK_op_";
 	int index = arabic.indexOf(c);
-	if (index >= 0)
-	    return buckwalter.charAt(index);
+	if (index >= 0) {
+	    char bw = buckwalter.charAt(index);
+	    System.err.println("ar2bw: "+c+" -> "+bw);
+	    return bw;
+	}
 	return c; //what is the right thing to do ?? maybe check for space, punctuation, etc?
     }
 
