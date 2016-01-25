@@ -16,6 +16,8 @@ The first version test voice can hopefully be released soon as well.
 
 Next steps:
 
+Allow partially diacritised text.
+
 Fix problems with phonetiser rules. Some rules are clearly wrong - test examples (or a native speaker!) needed to sort them out.
 
 Convert vocaliser from python to java - or at least speed it up and fix problems.
