@@ -40,93 +40,93 @@ public class MaryInterfaceArIT {
 
     //THIS WILL ONLY WORK IF THE MISHKAL WEBSERVER IS RUNNING
     //@Test
-    public void canProcessArabicToTokens() throws Exception {
-	// setup
-	MaryInterface mary = new LocalMaryInterface();
-	mary.setInputType(MaryDataType.TEXT.name());
-	mary.setOutputType(MaryDataType.TOKENS.name());
-	mary.setLocale(new Locale("ar"));
+    // public void canProcessArabicToTokens() throws Exception {
+    // 	// setup
+    // 	MaryInterface mary = new LocalMaryInterface();
+    // 	mary.setInputType(MaryDataType.TEXT.name());
+    // 	mary.setOutputType(MaryDataType.TOKENS.name());
+    // 	mary.setLocale(new Locale("ar"));
 
-	String example = "إلى المملكة المغربية";
-
-
-	// exercise
-	Document allos = mary.generateXML(example);
-	// verify
-	assertNotNull(allos);
-
-    }
-
-    @Test
-    public void canProcessVocalisedArabicToTokens() throws Exception {
-	// setup
-	MaryInterface mary = new LocalMaryInterface();
-	mary.setInputType(MaryDataType.TEXT.name());
-	mary.setOutputType(MaryDataType.TOKENS.name());
-	mary.setLocale(new Locale("ar"));
-
-	String example = MaryDataType.getExampleText(MaryDataType.TEXT, mary.getLocale());
+    // 	String example = "إلى المملكة المغربية";
 
 
-	// exercise
-	Document allos = mary.generateXML(example);
-	// verify
-	assertNotNull(allos);
+    // 	// exercise
+    // 	Document allos = mary.generateXML(example);
+    // 	// verify
+    // 	assertNotNull(allos);
 
-    }
+    // }
 
-    @Test
-    public void canProcessBuckwalterToTokens() throws Exception {
-	// setup
-	MaryInterface mary = new LocalMaryInterface();
-	mary.setInputType(MaryDataType.TEXT.name());
-	mary.setOutputType(MaryDataType.TOKENS.name());
-	mary.setLocale(new Locale("ar"));
+    // @Test
+    // public void canProcessVocalisedArabicToTokens() throws Exception {
+    // 	// setup
+    // 	MaryInterface mary = new LocalMaryInterface();
+    // 	mary.setInputType(MaryDataType.TEXT.name());
+    // 	mary.setOutputType(MaryDataType.TOKENS.name());
+    // 	mary.setLocale(new Locale("ar"));
 
-	String example = "IilaY Alomamolakap Alomugorabiy_ap";
+    // 	String example = MaryDataType.getExampleText(MaryDataType.TEXT, mary.getLocale());
 
-	// exercise
-	Document allos = mary.generateXML(example);
-	// verify
-	assertNotNull(allos);
 
-    }
+    // 	// exercise
+    // 	Document allos = mary.generateXML(example);
+    // 	// verify
+    // 	assertNotNull(allos);
+
+    // }
+
+    // @Test
+    // public void canProcessBuckwalterToTokens() throws Exception {
+    // 	// setup
+    // 	MaryInterface mary = new LocalMaryInterface();
+    // 	mary.setInputType(MaryDataType.TEXT.name());
+    // 	mary.setOutputType(MaryDataType.TOKENS.name());
+    // 	mary.setLocale(new Locale("ar"));
+
+    // 	String example = "IilaY Alomamolakap Alomugorabiy_ap";
+
+    // 	// exercise
+    // 	Document allos = mary.generateXML(example);
+    // 	// verify
+    // 	assertNotNull(allos);
+
+    // }
     
-    @Test
-    public void canProcessTokensToAllophones() throws Exception {
-	// setup
-	MaryInterface mary = new LocalMaryInterface();
-	mary.setInputType(MaryDataType.TOKENS.name());
-	mary.setOutputType(MaryDataType.ALLOPHONES.name());
-	mary.setLocale(new Locale("ar"));
-	String example = MaryDataType.getExampleText(MaryDataType.TOKENS, mary.getLocale());
-	System.err.println("Arabic example text: "+example);
-	assertNotNull(example);
-	Document tokens = DomUtils.parseDocument(example);
-	// exercise
-	Document allos = mary.generateXML(tokens);
-	// verify
-	assertNotNull(allos);
-    }
+    // @Test
+    // public void canProcessTokensToAllophones() throws Exception {
+    // 	// setup
+    // 	MaryInterface mary = new LocalMaryInterface();
+    // 	mary.setInputType(MaryDataType.TOKENS.name());
+    // 	mary.setOutputType(MaryDataType.ALLOPHONES.name());
+    // 	mary.setLocale(new Locale("ar"));
+    // 	String example = MaryDataType.getExampleText(MaryDataType.TOKENS, mary.getLocale());
+    // 	System.err.println("Arabic example text: "+example);
+    // 	assertNotNull(example);
+    // 	Document tokens = DomUtils.parseDocument(example);
+    // 	// exercise
+    // 	Document allos = mary.generateXML(tokens);
+    // 	// verify
+    // 	assertNotNull(allos);
+    // }
     
-    @Test
-    public void canProcessTokensToAcoustparams() throws Exception {
-	// setup
-	MaryInterface mary = new LocalMaryInterface();
-	mary.setInputType(MaryDataType.TOKENS.name());
-	mary.setOutputType(MaryDataType.ACOUSTPARAMS.name());
-	mary.setLocale(new Locale("ar"));
-	String example = MaryDataType.getExampleText(MaryDataType.TOKENS, mary.getLocale());
-	System.err.println("Arabic example text: "+example);
-	assertNotNull(example);
-	Document tokens = DomUtils.parseDocument(example);
-	// exercise
-	Document acparams = mary.generateXML(tokens);
-	// verify
-	assertNotNull(acparams);
+    // @Test
+    // public void canProcessTokensToAcoustparams() throws Exception {
+    // 	// setup
+    // 	MaryInterface mary = new LocalMaryInterface();
+    // 	mary.setInputType(MaryDataType.TOKENS.name());
+    // 	mary.setOutputType(MaryDataType.ACOUSTPARAMS.name());
+    // 	mary.setLocale(new Locale("ar"));
+    // 	String example = MaryDataType.getExampleText(MaryDataType.TOKENS, mary.getLocale());
+    // 	System.err.println("Arabic example text: "+example);
+    // 	assertNotNull(example);
+    // 	Document tokens = DomUtils.parseDocument(example);
+    // 	// exercise
+    // 	Document acparams = mary.generateXML(tokens);
+    // 	// verify
+    // 	assertNotNull(acparams);
 
-	System.err.println("Output data type: "+mary.getOutputType());
-	//HB this is not right, PHONEMES get printed here, how does that happen? Where are the acoustparams, and why no complaint?	
-	System.err.println("Result: "+getStringFromDoc(acparams));
-    }
+    // 	System.err.println("Output data type: "+mary.getOutputType());
+    // 	//HB this is not right, PHONEMES get printed here, how does that happen? Where are the acoustparams, and why no complaint?	
+    // 	System.err.println("Result: "+getStringFromDoc(acparams));
+    // }
 }

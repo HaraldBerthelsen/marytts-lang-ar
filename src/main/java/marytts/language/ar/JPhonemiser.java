@@ -46,10 +46,12 @@ public class JPhonemiser extends marytts.modules.JPhonemiser {
 	//Here only one word at a time..
 
 
+	text = arabicToBuckwalter(text);
+
 
         // First, try a simple userdict and lexicon lookup:
 
-	System.err.println("Text: "+text);
+	//System.err.println("Text: "+text);
 
 
         String result = userdictLookup(text, pos);
@@ -146,6 +148,30 @@ public class JPhonemiser extends marytts.modules.JPhonemiser {
 	return result;
     }
 
+    private static String arabicToBuckwalter(String text) {
+	String ar = "";
+	for (char ch: text.toCharArray()) {
+	    ar += arabicToBuckwalter(ch);
+	}
+	return ar;
+    }
+
+
+    private static char arabicToBuckwalter(char c) {
+	final String arabic = "ابتثجحخدذرزسشصضطظعغفقكلمنهويءإأؤئآٱٰىًٌٍَُِّْةـ";
+	//final String buckwalter = "AbtvjHxd*rzs$SDTZEgfqklmnhwy'IOW}|{`YauiFNK_op_";
+	//' -> 1 WRONG it's lone hamza TODO replace with something else in corpus (or is it ok to keep '?)
+	//| -> 1
+	//` -> 2
+	final String buckwalter = "AbtvjHxd*rzs$SDTZEgfqklmnhwy1IOW}1{2YauiFNK_op_";
+	int index = arabic.indexOf(c);
+	if (index >= 0) {
+	    char bw = buckwalter.charAt(index);
+	    System.err.println("ar2bw: "+c+" -> "+bw);
+	    return bw;
+	}
+	return c; //what is the right thing to do ?? maybe check for space, punctuation, etc?
+    }
 
 
     private String buckwalterToPhonetic(String text) {
@@ -275,11 +301,11 @@ public class JPhonemiser extends marytts.modules.JPhonemiser {
 
 	    //If letter is unambiguous
 	    if ( unambiguousConsonantMap.containsKey(letter) ) {
-		System.out.println("Unambiguous Consonant: "+letter+", next: "+next);
+		//System.out.println("Unambiguous Consonant: "+letter+", next: "+next);
 
 		// double if next is shadda TODO change shadda symbol
 		if ( next.equals("_") ) {
-		    System.out.println("Next is shadda");
+		    //System.out.println("Next is shadda");
 		    phone = unambiguousConsonantMap.get(letter)+unambiguousConsonantMap.get(letter);
 		} else {
 		    phone = unambiguousConsonantMap.get(letter);
@@ -293,7 +319,7 @@ public class JPhonemiser extends marytts.modules.JPhonemiser {
 
 	    //#Lam could be omitted in definite article (sun letters with shadda) TODO shadda is still "_", change
 	    else if ( letter.equals("l") ) {
-		System.out.println("al: "+next+", "+nextnext);
+		//System.out.println("al: "+next+", "+nextnext);
 		if ( prev.equals("A") && !next.matches("["+diacritics+"]") && !vowelMap.containsKey(next) && ( nextnext.equals("_") ) ) {
 		    phone = "";
 		} else {
@@ -305,7 +331,7 @@ public class JPhonemiser extends marytts.modules.JPhonemiser {
 	    //#Ta' marboota is determined by the following if it is a diacritic or not
 
 	    else if ( letter.equals("p") ) {
-		System.out.println("p: "+next);
+		//System.out.println("p: "+next);
 		if ( next.matches("["+diacritics+"]") ) {
 		    phone = "t";
 		} else {
@@ -316,7 +342,8 @@ public class JPhonemiser extends marytts.modules.JPhonemiser {
 
 	    //vowels (at first really basic!)
 	    else if ( vowelMap.containsKey(letter) ) {
-		System.out.println("Vowel: "+letter);
+		//System.out.println("Vowel: "+letter);
+
 		//phone = vowelMap.get(letter)[0][0];
 
 		//Now copying rules from Arabic-Phonetiser
@@ -330,18 +357,18 @@ public class JPhonemiser extends marytts.modules.JPhonemiser {
 			if ( ( letter.equals("w") && prev.equals("u") && !next.matches("[aiAY]") ) || ( letter.equals("y") && prev.equals("i") && !next.matches("[aiAY]") ) ) {
 			    if ( emphaticContext ) {
 				phone = vowelMap.get(letter)[1][0];
-				System.out.println("Vowel case 1: "+letter+" -> "+phone); //UU0, II0
+				//System.out.println("Vowel case 1: "+letter+" -> "+phone); //UU0, II0
 			    } else {
 				phone = vowelMap.get(letter)[0][0];
-				System.out.println("Vowel case 2: "+letter+" -> "+phone); //uu0, ii0
+				//System.out.println("Vowel case 2: "+letter+" -> "+phone); //uu0, ii0
 			    }
 			} else {
 			    if ( letter.equals("w") && next.equals("A") && nextnext.equals("#") ) {
 				phone = "w uu0";
-				System.out.println("Vowel case 3: "+letter+" -> "+phone); //w uu0 TODO maybe NH means that these are options?
+				//System.out.println("Vowel case 3: "+letter+" -> "+phone); //w uu0 TODO maybe NH means that these are options?
 			    } else {
 				phone = ambiguousConsonantMap.get(letter)[0];
-				System.out.println("Vowel case 4: "+letter+" -> "+phone); //w, y
+				//System.out.println("Vowel case 4: "+letter+" -> "+phone); //w, y
 			    }
 			}
 			
@@ -349,10 +376,10 @@ public class JPhonemiser extends marytts.modules.JPhonemiser {
 			//TODO change shadda
 			if ( prev.equals("a") || ( letter.equals("w") && prev.matches("[iy]") ) || ( letter.equals("y") && prev.matches("[uw]") ) ) {
 			    phone = ambiguousConsonantMap.get(letter)[0]+ambiguousConsonantMap.get(letter)[0];
-			    System.out.println("Vowel case 5: "+letter+" -> "+phone); //ww, yy
+			    //System.out.println("Vowel case 5: "+letter+" -> "+phone); //ww, yy
 			} else {
 			    phone = vowelMap.get(letter)[0][0]+ambiguousConsonantMap.get(letter)[0];
-			    System.out.println("Vowel case 6: "+letter+" -> "+phone); //uu0 w, ii0 y TODO maybe NH means that these are options?
+			    //System.out.println("Vowel case 6: "+letter+" -> "+phone); //uu0 w, ii0 y TODO maybe NH means that these are options?
 			}
 		    } else {
 			//#Waws and Ya's at the end of the word could be shortened
@@ -360,19 +387,19 @@ public class JPhonemiser extends marytts.modules.JPhonemiser {
 			    if ( prev.matches("["+consonants+"ui"+"]") && next.equals("#") ) {
 				phone = vowelMap.get(letter)[1][0];
 				phone = phone.replaceAll("^.",""); //remove first character
-				System.out.println("Vowel case 7: "+letter+" -> "+phone); //U0, I0
+				//System.out.println("Vowel case 7: "+letter+" -> "+phone); //U0, I0
 			    } else {
 				phone = vowelMap.get(letter)[1][0];
-				System.out.println("Vowel case 8: "+letter+" -> "+phone); //UU0, II0
+				//System.out.println("Vowel case 8: "+letter+" -> "+phone); //UU0, II0
 			    }
 			} else {
 			    if ( prev.matches("["+consonants+"ui"+"]") && next.equals("#") ) {
 				phone = vowelMap.get(letter)[0][0];
 				phone = phone.replaceAll("^.",""); //remove first character
-				System.out.println("Vowel case 9: "+letter+" -> "+phone); //u0, i0
+				//System.out.println("Vowel case 9: "+letter+" -> "+phone); //u0, i0
 			    } else {
 				phone = vowelMap.get(letter)[0][0];
-				System.out.println("Vowel case 10: "+letter+" -> "+phone); //uu0, ii0
+				//System.out.println("Vowel case 10: "+letter+" -> "+phone); //uu0, ii0
 			    }
 			}
 		    }
@@ -381,46 +408,46 @@ public class JPhonemiser extends marytts.modules.JPhonemiser {
 		    if ( emphaticContext ) {
 			if ( ( unambiguousConsonantMap.containsKey(next) || next.equals("l") ) && nextnext.equals("#") && text.length() > 7 ) {
 			    phone = vowelMap.get(letter)[1][1];
-			    System.out.println("Vowel case 11: "+letter+" -> "+phone); //??
+			    //System.out.println("Vowel case 11: "+letter+" -> "+phone); //??
 			} else {
 			    phone = vowelMap.get(letter)[1][0];
-			    System.out.println("Vowel case 12: "+letter+" -> "+phone); //??
+			    //System.out.println("Vowel case 12: "+letter+" -> "+phone); //??
 			}
 		    } else {
 			if ( ( unambiguousConsonantMap.containsKey(next) || next.equals("l") ) && nextnext.equals("#") && text.length() > 7 ) {
 			    phone = vowelMap.get(letter)[0][1];
-			    System.out.println("Vowel case 13: "+letter+" -> "+phone); //??
+			    //System.out.println("Vowel case 13: "+letter+" -> "+phone); //??
 			} else {
 			    phone = vowelMap.get(letter)[0][0];
-			    System.out.println("Vowel case 14: "+letter+" -> "+phone); //??
+			    //System.out.println("Vowel case 14: "+letter+" -> "+phone); //??
 			}
 		    }
 		} else if ( letter.matches("[aAY]") ) {
 		    //#Alif could be ommited in definite article and beginning of some words
 		    if ( letter.equals("A") && prev.matches("[wk]") && prevprev.equals("#") ) {
 			phone = "a";
-			System.out.println("Vowel case 15: "+letter+" -> "+phone); //??
+			//System.out.println("Vowel case 15: "+letter+" -> "+phone); //??
 		    } else if ( letter.equals("A") && prev.matches("[ui]") ) {
 			phone = ""; //???
-			System.out.println("Special case: A dropped after u|i");
+			//System.out.println("Special case: A dropped after u|i");
 		    } else if ( letter.equals("A") && prev.equals("w") && next.equals("#") ) {
 			phone = "";
-			System.out.println("Vowel case 16: "+letter+" -> "+phone); //??
+			//System.out.println("Vowel case 16: "+letter+" -> "+phone); //??
 		    } else if ( letter.matches("[AY]") && next.equals("#") ) {
 			if ( emphaticContext ) {
 			    phone = "A";
-			    System.out.println("Vowel case 17: "+letter+" -> "+phone); //??
+			    //System.out.println("Vowel case 17: "+letter+" -> "+phone); //??
 			} else {
 			    phone = "a";
-			    System.out.println("Vowel case 18: "+letter+" -> "+phone); //??
+			    //System.out.println("Vowel case 18: "+letter+" -> "+phone); //??
 			}
 		    } else {
 			if ( emphaticContext ) {
 			    phone = vowelMap.get(letter)[1][0];
-			    System.out.println("Vowel case 19: "+letter+" -> "+phone); //??
+			    //System.out.println("Vowel case 19: "+letter+" -> "+phone); //??
 			} else {
 			    phone = vowelMap.get(letter)[0][0];
-			    System.out.println("Vowel case 20: "+letter+" -> "+phone); //??
+			    //System.out.println("Vowel case 20: "+letter+" -> "+phone); //??
 			}
 		    }
 
@@ -436,11 +463,11 @@ public class JPhonemiser extends marytts.modules.JPhonemiser {
 
 
 	    else {
-		System.out.println("No match for letter: "+letter);
+		System.out.println("WARNING: (JPhonemiser) No match for letter: "+letter);
 	    }
 
 
-	    System.out.println("letter: \""+letter+"\" --> phone: "+phone);
+	    //System.out.println("letter: \""+letter+"\" --> phone: "+phone);
 	    phonemes += " "+phone;
 			    
 	}
@@ -448,7 +475,7 @@ public class JPhonemiser extends marytts.modules.JPhonemiser {
 	//cleanup a bit..
 	phonemes = phonemes.replace("i0 ii0", "ii0");
 
-	System.out.println("Word: "+text+" --> "+phonemes);
+	//System.out.println("Word: "+text+" --> "+phonemes);
 
 
 	return phonemes;
