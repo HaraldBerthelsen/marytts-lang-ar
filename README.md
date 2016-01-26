@@ -13,10 +13,18 @@ Then clone and compile this, copy the jarfile to marytts/target/marytts-5.2-SNAP
 
 The first version test voice can hopefully be released soon as well.
 
+Input text in arabic writing, without diacritics or fully or partly vocalised.
+
+Sample text to try:
+
+لسير ونستون ليونارد سبنسر تشرشل, رئيس وزراء 
+المملكة المتحدة
+
+
+السير وِنْسْتُونْ ليونارْدُ سْبِنْسِرْ تْشَرْشِلْ, رئيس وزراء 
+المملكة المتحدة
 
 Next steps:
-
-Allow partially diacritised text.
 
 Fix problems with phonetiser rules. Some rules are clearly wrong - test examples (or a native speaker!) needed to sort them out.
 
