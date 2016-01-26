@@ -15,6 +15,10 @@ The first version test voice can hopefully be released soon as well.
 
 Input text in arabic writing, without diacritics or fully or partly vocalised.
 
+Numbers work to some extent, number expansion is done with icu4j.
+
+Some punctuation and other "weird" characters may cause problems.
+
 Sample text to try:
 
 لسير ونستون ليونارد سبنسر تشرشل, رئيس وزراء 
