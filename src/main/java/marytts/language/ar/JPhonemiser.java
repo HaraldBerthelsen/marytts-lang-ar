@@ -118,7 +118,7 @@ public class JPhonemiser extends marytts.modules.JPhonemiser {
 
 
         if (result != null) {
-            g2pMethod.append("bw2p rules");
+            g2pMethod.append("rules");
             return result;
         }
 
@@ -393,7 +393,7 @@ public class JPhonemiser extends marytts.modules.JPhonemiser {
 			    //System.out.println("Vowel case 5: "+letter+" -> "+phone); //ww, yy
 			} else {
 			    phone = vowelMap.get(letter)[0][0]+ambiguousConsonantMap.get(letter)[0];
-			    //System.out.println("Vowel case 6: "+letter+" -> "+phone); //uu0 w, ii0 y TODO maybe NH means that these are options?
+			    System.out.println("Vowel case 6: "+letter+" -> "+phone); //uu0 w, ii0 y TODO maybe NH means that these are options?
 			}
 		    } else {
 			//#Waws and Ya's at the end of the word could be shortened
@@ -473,7 +473,9 @@ public class JPhonemiser extends marytts.modules.JPhonemiser {
 
 	    
 
-
+	    else if ( letter.equals("_") ) {
+		//do nothing, it should have been dealt with already
+	    }
 
 
 	    else {

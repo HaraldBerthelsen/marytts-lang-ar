@@ -46,7 +46,7 @@ public class JTokeniser extends marytts.modules.JTokeniser {
 	public JTokeniser() {
 		super(MaryDataType.RAWMARYXML, MaryDataType.TOKENS, new Locale("ar"));
 		//needs to setTokenizerLanguage("en") otherwise it won't work..
-		//But that's really bad - we would want tokenisation in arabic
+		//But that's really bad - we would want tokenisation with arabic punctuation etc
 		setTokenizerLanguage("en");
 	}
 
@@ -69,7 +69,7 @@ public class JTokeniser extends marytts.modules.JTokeniser {
 		System.err.println(s);
 
 		s = s.replaceAll("،", ",");
-		s = s.replaceAll("XX", "YY");
+		//s = s.replaceAll("XX", "YY");
 
 		System.err.println(s);
 
