@@ -77,7 +77,7 @@ public class Postlex extends PronunciationModel {
 		    System.out.println("Removing A");
 		    m.setAttribute("ph", transcription.replaceAll("^' a -?","' "));
 		}
-		if ( transcription.matches(".*[aui]$") ) {
+		if ( transcription.matches(".*[AUIaui][01]?$") ) {
 		    prevEndsWithVowel = true;
 		}
 		

@@ -103,6 +103,9 @@ public class PreprocessTest {
 	private Object[][] vocalisationData() {
 		// @formatter:off
 	    return new Object[][] { 
+		//With case ending
+		//{ "المملكة", "الْمَمْلَكَةُ" }
+		//Without case ending
 		{ "المملكة", "الْمَمْلَكَة" }
 		//, { "المغربية", "الْمَغْرِبِيَّة"}
 	    };
@@ -114,5 +117,5 @@ public class PreprocessTest {
 	    Assert.assertEquals(actual, word);
 	}
 
-
+    //   ٌٍِ][ﻷضَصثقفًٌٌَُ      َ    َ
 }

@@ -31,6 +31,13 @@ import org.w3c.dom.traversal.TreeWalker;
 
 import com.ibm.icu.text.RuleBasedNumberFormat;
 
+import java.io.StringReader;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.json.JsonValue;
+
 /**
  * @author Tristan Hamilton + HB
  * 
@@ -71,7 +78,10 @@ public class Preprocess extends InternalModule {
 	    origText.append(" " + MaryDomUtils.tokenText(t));
 	}
 	String vocText = vocaliseText(origText.toString());
+	//String vocText = vocaliseTextMishkal(origText.toString());
+
 	String[] vocTextList = vocText.split(" ");
+
 
 	TreeWalker tw2 = ((DocumentTraversal) doc).createTreeWalker(doc, NodeFilter.SHOW_ELEMENT,
 								   new NameNodeFilter(MaryXML.TOKEN), false);
@@ -85,6 +95,13 @@ public class Preprocess extends InternalModule {
     }
 
     protected static String vocaliseText(String text) throws Exception {
+	//return vocaliseTextOld(text);
+	return vocaliseTextMishkal(text);
+    }
+
+
+
+    protected static String vocaliseTextOld(String text) throws Exception {
 
 	String url = "http://localhost:8080/vocalise?text=";
 	url+=URLEncoder.encode(text, "UTF-8");
@@ -108,6 +125,72 @@ public class Preprocess extends InternalModule {
 	
 	return vocalised;
 
+    }
+
+    protected static String vocaliseTextMishkal(String text) throws Exception {
+
+	String url = "http://localhost:8080/ajaxGet?action=Tashkeel2&text=";
+	url+=URLEncoder.encode(text, "UTF-8");
+	System.out.println("Vocalise url: "+url);
+
+	InputStream is = new URL(url).openStream();
+
+        BufferedReader in = new BufferedReader(new InputStreamReader(is));
+
+        StringBuilder response = new StringBuilder();
+        String inputLine;
+
+        while ((inputLine = in.readLine()) != null) 
+            response.append(inputLine);
+
+        in.close();
+
+        String vocalised = response.toString();	
+	System.out.println("Vocalised text: "+vocalised);
+
+	JsonReader reader = Json.createReader(new StringReader(vocalised));
+        JsonObject vocObject = reader.readObject();         
+        reader.close();
+
+	List<String> vocList = new ArrayList<String>();
+	JsonArray resultsArray = vocObject.getJsonArray("result");
+
+	for (int i = 0; i < resultsArray.size(); ++i) {
+	    JsonObject result = resultsArray.getJsonObject(i);
+
+	    //"chosen" appears to be with case endings, "semi" without
+	    //Maybe better to use "chosen" and skip final diacritic? 
+	    //String chosen = result.getString("chosen");
+	    String chosen = result.getString("semi");
+
+	    if ( chosen.equals("") ) {
+		chosen = result.getString("chosen");
+	    }
+
+	    vocList.add(chosen);
+	}
+
+
+	// for (JsonValue jsonValue : resultsArray) {        
+        //     System.out.println(jsonValue.toString());
+	//     String chosen = ((JsonObject) resultObj).getString("chosen");
+	//     //String chosen = jsonValue.getJsonObject("chosen");
+	//     vocList.add(chosen);
+        // }
+
+	
+	//String[] vocArray = new String[vocList.size()];
+	//vocList.toArray(vocArray);
+	//return vocArray;
+
+	String vocString = "";
+
+	for (String s : vocList)
+	    {
+		vocString += s + " ";
+	    }
+
+	return vocString.trim();
     }
 
 
