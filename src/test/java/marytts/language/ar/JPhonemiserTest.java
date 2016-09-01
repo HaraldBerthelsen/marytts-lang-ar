@@ -30,8 +30,8 @@ public class JPhonemiserTest {
 	private Object[][] phonetiseData() {
 		// @formatter:off
 	    //These tests are not correct - but anyway this is a place to add tests later!
-	    return new Object[][] { { "وَاحِد", "w a - ' H i d"}, 
-				    { "إِثْنانِ", "' < i0 ^ - n aa - n i0" } };
+	    return new Object[][] { { "وَاحِد", "' w a - H i1 d"}, 
+				    { "إِثْنانِ", "' < i0 - ^ n aa - n i0" } };
 		// @formatter:on
 	}
 
