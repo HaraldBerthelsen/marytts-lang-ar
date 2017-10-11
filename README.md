@@ -1,5 +1,8 @@
 # marytts-lang-ar
 
+Don't use - doesn't work at the moment. If you want basic arabic support use my clone of marytts.
+
+
 This is very much work in progress.
 It sort of works for me - but there are plenty of errors and problems.
 
